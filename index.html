@@ -1,186 +1,131 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Star Counter Duo</title>
-  <style>
-    html,body{
-        margin:0;
-        height:100%;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-family:"Segoe UI",sans-serif;
-        background:#2f3437; /* Notion dark theme */
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Star Counter Duo</title>
 
-    /* Wrapper com dois cards lado a lado */
-    #wrapper{
-      display:flex;gap:32px;flex-wrap:wrap;
-      justify-content:center;align-items:flex-start;
-    }
+<style>
+  /* ==== Reset básico para evitar heranças do Notion ==== */
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-    /* Card base (4:3, bg, etc.) */
-    .card{
-      width:60vmin;height:calc(60vmin*0.75);
-      max-width:480px;max-height:360px;
-      background:url('background.png') center/cover no-repeat;
-      border-radius:24px;
-      box-shadow:0 8px 24px rgba(0,0,0,.2);
-      display:flex;align-items:center;justify-content:center;
-      padding:24px;box-sizing:border-box;
-    }
+  body{
+    font-family:"Segoe UI",sans-serif;
+    background:#2f3437;  /* cor do tema dark do Notion            */
+    display:flex;align-items:center;justify-content:center;
+    min-height:100dvh;   /* garante altura total dentro do iframe */
+  }
 
-    .inner{
-      display:flex;flex-direction:column;
-      align-items:center;gap:16px;
-    }
+  /* ---------- Layout ---------- */
+  #wrapper{
+    --card-w:clamp(240px,45vw,320px);      /* ↳ adapta ao espaço   */
+    --star-size:calc(var(--card-w)/9);      /* ↳ 10‑estrelas cabem  */
+    display:flex;gap:24px;flex-wrap:wrap;justify-content:center;
+  }
 
-    .title{
-      margin:0;font-size:24px;color:#fff;text-shadow:0 2px 4px #0007;
-    }
+  .card{
+    width:var(--card-w);
+    height:calc(var(--card-w)*0.75);        /* proporção 4:3        */
+    background:url('background.png') center/cover no-repeat;
+    border-radius:18px;
+    box-shadow:0 4px 16px #0005;
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;
+  }
 
-    .starButton{
-      font-size:18px;cursor:pointer;user-select:none;
-      background:#ffeaa7;border:2px solid #dcdde1;
-      padding:8px 16px;border-radius:8px;
-      box-shadow:0 2px 8px rgba(0,0,0,.1);
-      transition:.2s;
-    }
-    .starButton:hover{background:#fdcb6e;transform:scale(1.05);}
+  .inner{display:flex;flex-direction:column;align-items:center;gap:14px}
+  .title{color:#fff;font-size:1.4rem;text-shadow:0 2px 4px #0007}
 
-    .star-row{display:flex;gap:8px;}
-    .star{font-size:56px;line-height:1;}
-    .empty{color:#b2bec3;}
-    .filled{color:#facc15;}
+  /* ---------- Botão ---------- */
+  .starButton{
+    background:#ffeaa7;border:2px solid #dcdde1;
+    padding:6px 14px;border-radius:8px;cursor:pointer;
+    font-size:1rem;transition:background .2s,transform .2s
+  }
+  .starButton:hover{background:#fdcb6e;transform:scale(1.05)}
 
-    .cardsTxt{font-size:20px;font-weight:600;color:#333;}
-  </style>
+  /* ---------- Estrelas ---------- */
+  .star-row{display:flex;gap:4px}
+  .star{
+    font-size:var(--star-size);
+    line-height:1;color:#b2bec3;transition:color .15s
+  }
+  .filled{color:#facc15}
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  .cardsTxt{color:#ddd;font-weight:600}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-  <div id="wrapper">
-    <!-- Card Bia -->
-    <div id="card-bia" class="card">
-      <div class="inner">
-        <h2 class="title">Bia Stars</h2>
-        <div id="bia-starButton" class="starButton">⭐ Dar estrela</div>
-        <div class="star-row" id="bia-row1"></div>
-        <div class="star-row" id="bia-row2"></div>
-        <div class="cardsTxt">Cartelas: <span id="bia-cards">0</span></div>
-      </div>
-    </div>
-
-    <!-- Card Pedro -->
-    <div id="card-pedro" class="card">
-      <div class="inner">
-        <h2 class="title">Pedro Stars</h2>
-        <div id="pedro-starButton" class="starButton">⭐ Dar estrela</div>
-        <div class="star-row" id="pedro-row1"></div>
-        <div class="star-row" id="pedro-row2"></div>
-        <div class="cardsTxt">Cartelas: <span id="pedro-cards">0</span></div>
-      </div>
+<div id="wrapper">
+  <!-- Bia -->
+  <div class="card">
+    <div class="inner">
+      <h2 class="title">Bia Stars</h2>
+      <div id="bia-starButton" class="starButton">⭐ Dar estrela</div>
+      <div class="star-row" id="bia-row1"></div>
+      <div class="star-row" id="bia-row2"></div>
+      <div class="cardsTxt">Cartelas: <span id="bia-cards">0</span></div>
     </div>
   </div>
 
+  <!-- Pedro -->
+  <div class="card">
+    <div class="inner">
+      <h2 class="title">Pedro Stars</h2>
+      <div id="pedro-starButton" class="starButton">⭐ Dar estrela</div>
+      <div class="star-row" id="pedro-row1"></div>
+      <div class="star-row" id="pedro-row2"></div>
+      <div class="cardsTxt">Cartelas: <span id="pedro-cards">0</span></div>
+    </div>
+  </div>
+</div>
+
 <script>
-  const supabase = window.supabase.createClient(
-    'https://cvssyernxdxsymigsckq.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2c3N5ZXJueGR4c3ltaWdzY2txIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzOTU5OTIsImV4cCI6MjA2NDk3MTk5Mn0.gauQlplTg-JjgFhYHkM1pbKVrEMU6-fMdiYQxFSs9T4'
-  );
+/* --- o JS original quase não muda --- */
+const supabase = window.supabase.createClient(
+  'https://cvssyernxdxsymigsckq.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2c3N5ZXJueGR4c3ltaWdzY2txIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzOTU5OTIsImV4cCI6MjA2NDk3MTk5Mn0.gauQlplTg-JjgFhYHkM1pbKVrEMU6-fMdiYQxFSs9T4'
+);
+const TABLE='stars', ROW_ID=1;
+const cards=[{p:'bia',c:'counter-bia'},{p:'pedro',c:'counter-pedro'}];
 
-  const TABLE  = 'stars';
-  const ROW_ID = 1;                   // única linha que guarda os contadores
-
-  /** configuração dos dois cards */
-  const cards = [
-    { prefix: 'bia',   column: 'counter-bia' },
-    { prefix: 'pedro', column: 'counter-pedro' }
-  ];
-
-  /* ---------- helpers ---------- */
-  function buildStars (pref) {
-    for (let i = 0; i < 10; i++) {
-      const span   = document.createElement('span');
-      span.id      = `${pref}-star-${i}`;
-      span.className = 'star empty';
-      span.textContent = '☆';
-      document
-        .getElementById(i < 5 ? `${pref}-row1` : `${pref}-row2`)
-        .appendChild(span);
-    }
+function build(pref){
+  for(let i=0;i<10;i++){
+    const s=document.createElement('span');
+    s.id=`${pref}-s${i}`;s.className='star';s.textContent='☆';
+    document.getElementById(i<5?`${pref}-row1`:`${pref}-row2`).appendChild(s);
   }
-
-  function updateDisplay (pref, total = 0) {
-    const filled = total % 10;
-    const cards  = Math.floor(total / 10);
-    for (let i = 0; i < 10; i++) {
-      const el = document.getElementById(`${pref}-star-${i}`);
-      if (i < filled) {
-        el.textContent = '★';
-        el.className   = 'star filled';
-      } else {
-        el.textContent = '☆';
-        el.className   = 'star empty';
-      }
-    }
-    document.getElementById(`${pref}-cards`).textContent = cards;
+}
+function render(pref,total=0){
+  const filled=total%10, cards=Math.floor(total/10);
+  for(let i=0;i<10;i++){
+    const el=document.getElementById(`${pref}-s${i}`);
+    el.textContent=i<filled?'★':'☆';
+    el.classList.toggle('filled',i<filled);
   }
-
-  /* ---------- db helpers ---------- */
-  async function load (pref, column) {
-    const { data, error } = await supabase
-      .from(TABLE)
-      .select(column)
-      .eq('id', ROW_ID)
-      .single();
-
-    if (!error) updateDisplay(pref, data[column] ?? 0);
-  }
-
-  async function addOne (pref, column) {
-    /* primeiro le o valor atual */
-    const { data: current, error } = await supabase
-      .from(TABLE)
-      .select(column)
-      .eq('id', ROW_ID)
-      .single();
-
-    if (error) return console.error(error);
-
-    const newValue = (current[column] ?? 0) + 1;
-
-    /* grava +1 */
-    const { error: upErr } = await supabase
-      .from(TABLE)
-      .update({ [column]: newValue })
-      .eq('id', ROW_ID);
-
-    if (!upErr) updateDisplay(pref, newValue);
-  }
-
-  /* ---------- init ---------- */
-  cards.forEach(({ prefix, column }) => {
-    buildStars(prefix);
-    load(prefix, column);
-
-    /* clique no botão */
-    document
-      .getElementById(`${prefix}-starButton`)
-      .addEventListener('click', () => addOne(prefix, column));
-
-    /* realtime – atualiza só o card afetado */
-    supabase
-      .channel(`stars_${prefix}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: TABLE, filter: `id=eq.${ROW_ID}` },
-        payload => updateDisplay(prefix, payload.new[column])
-      )
-      .subscribe();
-  });
+  document.getElementById(`${pref}-cards`).textContent=cards;
+}
+async function load(pref,col){
+  const {data}=await supabase.from(TABLE).select(col).eq('id',ROW_ID).single();
+  render(pref,data?.[col]??0);
+}
+async function add(pref,col){
+  const {data}=await supabase.from(TABLE).select(col).eq('id',ROW_ID).single();
+  const val=(data?.[col]??0)+1;
+  await supabase.from(TABLE).update({[col]:val}).eq('id',ROW_ID);
+  render(pref,val);
+}
+cards.forEach(({p,c})=>{
+  build(p);load(p,c);
+  document.getElementById(`${p}-starButton`).onclick=()=>add(p,c);
+  supabase.channel(`stars_${p}`)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:TABLE,filter:`id=eq.${ROW_ID}`},
+        pl=>render(p,pl.new[c]))
+    .subscribe();
+});
 </script>
 </body>
 </html>
